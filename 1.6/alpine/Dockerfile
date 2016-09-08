@@ -15,6 +15,7 @@ RUN set -ex \
 		gcc \
 		musl-dev \
 		openssl \
+    wget \
 		go \
 	\
 	&& export GOROOT_BOOTSTRAP="$(go env GOROOT)" \
@@ -25,10 +26,7 @@ RUN set -ex \
 	&& rm golang.tar.gz \
 	&& cd /usr/local/go/src \
 	&& patch -p2 -i /no-pic.patch \
-	&& ./make.bash \
-	\
-	&& rm -rf /*.patch \
-	&& apk del .build-deps
+	&& ./make.bash
 
 ENV GOPATH /go
 ENV PATH $GOPATH/bin:/usr/local/go/bin:$PATH
@@ -37,3 +35,8 @@ RUN mkdir -p "$GOPATH/src" "$GOPATH/bin" && chmod -R 777 "$GOPATH"
 WORKDIR $GOPATH
 
 COPY go-wrapper /usr/local/bin/
+
+RUN apk add --no-cache git \
+  && wget -qO - https://glide.sh/get | sh \
+	&& rm -rf /*.patch \
+	&& apk del .build-deps
